@@ -27,7 +27,7 @@ def sign_up():
     phone_no = request.form.get('phone_number', None)
     password = request.form.get('password', None)
     account_type = request.form.get('account_type', None)
-    user_name = request.form.get('phone_number', None)
+    user_name = request.form.get('user_name', None)
     school_id = request.form.get('school_id', None)
     teacher_id = request.form.get('teacher_id', None)
 
