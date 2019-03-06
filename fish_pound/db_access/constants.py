@@ -6,7 +6,7 @@
 # @Author  : PandaTofu
 
 DB_URL = 'mysql+pymysql://%(user)s:%(passwd)s@%(url)s/%(dbname)s' \
-                    % {'user': 'root', 'passwd': '12345678', 'url': 'localhost', 'dbname': 'test'}
+         % {'user': 'root', 'passwd': 'FishPound2019!', 'url': 'localhost', 'dbname': 'test'}
 
 TYPE_TEACHER = 'Teacher'
 TYPE_PARENT = 'Parent'

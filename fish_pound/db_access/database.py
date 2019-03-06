@@ -5,10 +5,14 @@
 # @Date    : 2018/11/04
 # @Author  : PandaTofu
 
+import copy
+import hashlib
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Text, Boolean, Enum
 from sqlalchemy.dialects.mysql import INTEGER
-from db_access.constants import TYPE_TEACHER, TYPE_PARENT
+
+from fish_pound.db_access.constants import TYPE_TEACHER, TYPE_PARENT
+
 
 BaseModel = declarative_base()
 
@@ -16,7 +20,7 @@ BaseModel = declarative_base()
 class BaseModel(BaseModel):
     __abstract__ = True
 
-    def verify(self):
+    def validate(self):
         return True
 
     def update(self, attrs):
@@ -24,8 +28,10 @@ class BaseModel(BaseModel):
             if hasattr(self, key):
                 setattr(self, key, value)
 
-    def get(self, key):
-        return getattr(self, key, None)
+    def get(self):
+        attrs = copy.deepcopy(self.__dict__)
+        attrs.pop('_sa_instance_state')
+        return attrs
 
 
 class User(BaseModel):
@@ -39,9 +45,18 @@ class User(BaseModel):
     teacher_id = Column(Integer)
     activated = Column(Boolean, default=False)
 
-    def verify(self):
+    def validate(self):
         if self.account_type == TYPE_TEACHER and self.teacher_id is None:
             raise ValueError("No teacher_id for user[%s]" % self.phone_no)
+
+    def encrypt_password(self):
+        if self.password is None:
+            return
+
+        m = hashlib.md5()
+        m.update(self.password.encode("utf8"))
+        password_hash = m.hexdigest()
+        self.update({"password": password_hash})
 
     def is_active(self):
         return self.activated

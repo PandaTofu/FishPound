@@ -5,12 +5,12 @@
 # @Date    : 2018/11/04
 # @Author  : PandaTofu
 
-
+import hashlib
 from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from db_access.database import School, User, Class, Notification, Homework
+from fish_pound.db_access.database import School, User, Class, Notification, Homework
 
 
 @contextmanager
@@ -47,7 +47,7 @@ class DbApi(object):
     def insert_school(self, **kwargs):
         with self.connect() as db_session:
             school = School(**kwargs)
-            school.verify()
+            school.validate()
             db_session.add(school)
 
     def update_school(self, school_id, **kwargs):
@@ -55,7 +55,7 @@ class DbApi(object):
             school = db_session.query(School).filter(User.school_id == school_id).first()
             if school:
                 school.update(kwargs)
-                school.verify()
+                school.validate()
 
     def delete_school(self, school_id):
         with self.connect() as db_session:
@@ -64,26 +64,34 @@ class DbApi(object):
                 db_session.delete(school)
 
     # -------------------Api for user table---------------------------
+    @staticmethod
+    def encrypt_password(password):
+        m = hashlib.md5()
+        m.update(password.encode("utf8"))
+        return m.hexdigest()
+
     def get_user(self, phone_no):
         with self.connect() as db_session:
-            return db_session.query(User).filter(User.phone_no == phone_no).first()
+            user = db_session.query(User).filter(User.phone_no == phone_no).with_lockmode('read').first()
+            return user.get() if user else None
 
-    def insert_user(self, **kwargs):
+    def insert_user(self, user):
         with self.connect() as db_session:
-            user = User(**kwargs)
-            user.verify()
+            user.validate()
+            user.encrypt_password()
             db_session.add(user)
 
     def update_user(self, phone_no, **kwargs):
         with self.connect() as db_session:
-            user = db_session.query(User).filter(User.phone_no == phone_no).first()
+            user = db_session.query(User).filter(User.phone_no == phone_no).with_lockmode('update').first()
             if user:
                 user.update(kwargs)
-                user.verify()
+                user.validate()
+                user.encrypt_password()
 
     def delete_user(self, phone_no):
         with self.connect() as db_session:
-            user = db_session.query(User).filter(User.phone_no == phone_no).first()
+            user = db_session.query(User).filter(User.phone_no == phone_no).with_lockmode('update').first()
             if user:
                 db_session.delete(user)
 
@@ -99,7 +107,7 @@ class DbApi(object):
     def insert_class(self, **kwargs):
         with self.connect() as db_session:
             class_record = Class(**kwargs)
-            class_record.verify()
+            class_record.validate()
             db_session.add(class_record)
 
     def update_class(self, class_id, **kwargs):
@@ -107,7 +115,7 @@ class DbApi(object):
             class_record = db_session.query(Class).filter(Class.class_id == class_id).first()
             if class_record:
                 class_record.update(kwargs)
-                class_record.verify()
+                class_record.validate()
 
     def delete_class(self, class_id):
         with self.connect() as db_session:
@@ -127,7 +135,7 @@ class DbApi(object):
     def insert_notification(self, **kwargs):
         with self.connect() as db_session:
             notification = Notification(**kwargs)
-            notification.verify()
+            notification.validate()
             db_session.add(notification)
 
     def update_notification(self, notification_id, **kwargs):
@@ -135,7 +143,7 @@ class DbApi(object):
             notification = db_session.query(Notification).filter(Notification.notification_id == notification_id).first()
             if notification and notification.is_allow_update():
                 notification.update(kwargs)
-                notification.verify()
+                notification.validate()
 
     def delete_notification(self, notification_id):
         with self.connect() as db_session:
@@ -155,7 +163,7 @@ class DbApi(object):
     def insert_homework(self, **kwargs):
         with self.connect() as db_session:
             homework = Homework(**kwargs)
-            homework.verify()
+            homework.validate()
             db_session.add(homework)
 
     def update_homework(self, homework_id, **kwargs):
@@ -163,7 +171,7 @@ class DbApi(object):
             homework = db_session.query(Homework).filter(Homework.homework_id == homework_id).first()
             if homework and homework.is_allow_update():
                 homework.update(kwargs)
-                homework.verify()
+                homework.validate()
 
     def delete_homework(self, homework_id):
         with self.connect() as db_session:
