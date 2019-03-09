@@ -25,7 +25,7 @@ def get_school_list():
     return "No implementation."
 
 
-@account_manager.route('/sign_up/', methods=['POST'])
+@account_manager.route('/sign_up', methods=['POST'])
 def sign_up():
     phone_no = request.form.get('phone_number', None)
     password = request.form.get('password', None)
@@ -43,7 +43,7 @@ def sign_up():
     return make_response(response)
 
 
-@account_manager.route('/sign_in/', methods=['POST'])
+@account_manager.route('/sign_in', methods=['POST'])
 def sign_in():
     phone_no = request.form.get('phone_number', None)
     password = request.form.get('password', None)
