@@ -13,6 +13,16 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from fish_pound.db_access.database import School, User, Class, Notification, Homework
 
 
+def singleton(cls):
+    _instance = {}
+
+    def _singleton(*args, **kargs):
+        if cls not in _instance:
+            _instance[cls] = cls(*args, **kargs)
+        return _instance[cls]
+
+    return _singleton
+
 @contextmanager
 def get_db_session(db_url):
     engine = create_engine(db_url, encoding='utf-8', echo=True)
@@ -28,6 +38,7 @@ def get_db_session(db_url):
         session.close()
 
 
+@singleton
 class DbApi(object):
     def __init__(self, db_url):
         self.db_url = db_url
@@ -178,3 +189,8 @@ class DbApi(object):
             homework = db_session.query(Homework).filter(Homework.homework_id == homework_id).first()
             if homework:
                 db_session.delete(homework)
+
+
+def get_db_api(db_url=None):
+    return DbApi(db_url)
+
