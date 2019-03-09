@@ -14,9 +14,9 @@ from fish_pound.app.constants import *
 account_manager = Blueprint('account', __name__, url_prefix=URL_ACCOUNT_PREFIX)
 
 
-def authenticate(user, password):
-    encrypted_password = generate_hash(password)
-    result = (user.password == encrypted_password)
+def authenticate(user_password, input_password):
+    encrypted_password = generate_hash(input_password)
+    result = (encrypted_password == user_password)
     return result
 
 
@@ -51,9 +51,9 @@ def sign_in():
     db_api = get_db_api()
     user = db_api.get_user(phone_no)
 
-    result = authenticate(user, password)
+    result = authenticate(user.get('password'), password)
     error_code = EC_OK
-    account_type = user.account_type
+    account_type = user.get('account_type', 'unknown')
     access_token = 0
     http_code = 200
     res_body = {'result': result,

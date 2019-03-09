@@ -6,8 +6,6 @@
 # @Author  : PandaTofu
 
 import hashlib
-from flask import Flask, g
-from fish_pound.db_access.db_api import DbApi
 
 
 def generate_hash(content):
