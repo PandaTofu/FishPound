@@ -12,6 +12,7 @@ from sqlalchemy import Column, Integer, String, Text, Boolean, Enum
 from sqlalchemy.dialects.mysql import INTEGER
 
 from fish_pound.db_access.constants import TYPE_TEACHER, TYPE_PARENT
+from fish_pound.utiltis import generate_hash
 
 
 BaseModel = declarative_base()
@@ -53,9 +54,7 @@ class User(BaseModel):
         if self.password is None:
             return
 
-        m = hashlib.md5()
-        m.update(self.password.encode("utf8"))
-        password_hash = m.hexdigest()
+        password_hash = generate_hash(self.password)
         self.update({"password": password_hash})
 
     def is_active(self):

@@ -6,12 +6,18 @@
 # @Author  : PandaTofu
 
 from flask import Blueprint, request, make_response, jsonify
-from fish_pound.app import utiltis
+from fish_pound.utiltis import generate_hash
 from fish_pound.db_access.database import User
 from fish_pound.db_access.db_api import get_db_api
 from fish_pound.app.constants import *
 
 account_manager = Blueprint('account', __name__, url_prefix=URL_ACCOUNT_PREFIX)
+
+
+def authenticate(user, password):
+    encrypted_password = generate_hash(password)
+    result = (user.password == encrypted_password)
+    return result
 
 
 @account_manager.route(PATH_SCHOOL_LIST, methods=['GET'])
@@ -39,4 +45,20 @@ def sign_up():
 
 @account_manager.route('/sign_in/', methods=['POST'])
 def sign_in():
-    return "No implementation."
+    phone_no = request.form.get('phone_number', None)
+    password = request.form.get('password', None)
+
+    db_api = get_db_api()
+    user = db_api.get_user(phone_no)
+
+    result = authenticate(user, password)
+    error_code = EC_OK
+    account_type = user.account_type
+    access_token = 0
+    http_code = 200
+    res_body = {'result': result,
+                'error_code': error_code,
+                'type': account_type,
+                'access_token': access_token}
+
+    return make_response(jsonify(res_body, http_code))
