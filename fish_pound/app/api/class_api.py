@@ -5,19 +5,40 @@
 # @Date    : 2019/02/20
 # @Author  : PandaTofu
 
-from flask import Blueprint
+from flask import Blueprint, request, make_response, jsonify
+from fish_pound.db_access.db_api import get_db_api
+from fish_pound.db_access.database import Class
+from fish_pound.db_access.constants import AccountType
+from fish_pound.app.api.user_manager import get_user_manager, login_required
 from fish_pound.app.constants import *
 
-class_manager = Blueprint('class', __name__)
+class_manager = Blueprint('class', __name__, url_prefix=URL_CLASS_PREFIX)
 
 
-@class_manager.route(PATH_CLASS_LIST, methods=['GET'])
+@class_manager.route('/list', methods=['GET'])
+@login_required(allowed_scope=[AccountType.teacher.name])
 def get_class_list():
-    pass
+    def get_response(result, error_code, filtered_class_list, http_code=HTTP_OK):
+        res_body = {'result': result, 'error_code': error_code, 'class_list': filtered_class_list}
+        return make_response(jsonify(res_body, http_code))
+
+    token = request.form.get('access_token', None)
+    max_item_number = request.form.get('max_item_number', None)
+
+    user_manager = get_user_manager()
+    user = user_manager.load_token(token)
+
+    db_api = get_db_api()
+    teacher_id = user.get('teacher_id')
+    class_list = db_api.get_classes_by_teacher_id(teacher_id)
+    class_list_page = class_list[0:max_item_number] if max_item_number < len(class_list) else class_list
+
+    return get_response(True, EC_OK, class_list_page)
 
 
-@class_manager.route(PATH_ADD_CLASS, methods=['POST'])
+@class_manager.route('/add', methods=['POST'])
 def add_class():
+
     pass
 
 

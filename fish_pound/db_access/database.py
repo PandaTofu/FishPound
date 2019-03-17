@@ -6,14 +6,13 @@
 # @Author  : PandaTofu
 
 import copy
-import hashlib
+
+from itsdangerous import URLSafeSerializer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Text, Boolean, Enum
 from sqlalchemy.dialects.mysql import INTEGER
-
-from fish_pound.db_access.constants import TYPE_TEACHER, TYPE_PARENT
-from fish_pound.utiltis import generate_hash
-
+from fish_pound.db_access.constants import AccountType
+from fish_pound.utils import generate_hash
 
 BaseModel = declarative_base()
 
@@ -40,14 +39,14 @@ class User(BaseModel):
 
     phone_no = Column(String(20), primary_key=True)
     password = Column(String(50), nullable=False)
-    account_type = Column(Enum(TYPE_TEACHER, TYPE_PARENT), nullable=False)
+    account_type = Column(Enum(AccountType), nullable=False)
     user_name = Column(String(50))
     school_id = Column(Integer)
     teacher_id = Column(Integer)
     activated = Column(Boolean, default=False)
 
     def validate(self):
-        if self.account_type == TYPE_TEACHER and self.teacher_id is None:
+        if self.account_type == AccountType.teacher.name and self.teacher_id is None:
             raise ValueError("No teacher_id for user[%s]" % self.phone_no)
 
     def encrypt_password(self):
@@ -56,6 +55,10 @@ class User(BaseModel):
 
         password_hash = generate_hash(self.password)
         self.update({"password": password_hash})
+
+    def get_token(self, secret_key, browser_id):
+        serializer = URLSafeSerializer(secret_key)
+        return serializer.dumps((self.phone_no, self.password, browser_id))
 
     def is_active(self):
         return self.activated

@@ -7,10 +7,14 @@
 
 from flask import Flask
 from sqlalchemy import create_engine
+from werkzeug.contrib.cache import SimpleCache
 from fish_pound.db_access.database import *
 from fish_pound.db_access.db_api import *
 from fish_pound.app.config import config
 from fish_pound.app.api.account_api import account_manager
+
+
+app_cache = SimpleCache()
 
 
 def init_db(app):

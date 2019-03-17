@@ -8,10 +8,11 @@
 
 class Config:
     """base config"""
-    SECRET_KEY = 'dnuoPhsiF'
     HOST = "127.0.0.1"
     PORT = 443
     DEBUG = True
+    SECRET_KEY = 'dnuoPhsiF'
+    TOKEN_LIFETIME = 3600
 
 
 class ProConfig(Config):

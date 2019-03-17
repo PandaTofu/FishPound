@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# @Version : 1.0
+# @Date    : 2019/02/24
+# @Author  : PandaTofu
+
+import hashlib
+from flask import request
+
+
+def singleton(cls):
+    _instance = {}
+
+    def _singleton(*args, **kargs):
+        if cls not in _instance:
+            _instance[cls] = cls(*args, **kargs)
+        return _instance[cls]
+
+    return _singleton
+
+
+def generate_hash(content):
+    m = hashlib.md5()
+    m.update(content.encode("utf8"))
+    return m.hexdigest()
+
+
+def get_remote_addr():
+    """get remote client address"""
+    address = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if not address:
+        address = address.encode('utf-8').split(b',')[0].strip()
+    return address
+
+
+def get_browser_id():
+    agent = request.headers.get('User-Agent')
+    if not agent:
+        agent = str(agent).encode('utf-8')
+    base_str = "%s|%s" % (get_remote_addr(), agent)
+    return generate_hash(base_str)
+
+
+

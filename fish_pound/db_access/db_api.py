@@ -5,12 +5,13 @@
 # @Date    : 2018/11/04
 # @Author  : PandaTofu
 
-import hashlib
 from contextlib import contextmanager
+
+from sqlalchemy import and_
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-
 from fish_pound.db_access.database import School, User, Class, Notification, Homework
+from fish_pound.utils import generate_hash
 
 
 def singleton(cls):
@@ -22,6 +23,7 @@ def singleton(cls):
         return _instance[cls]
 
     return _singleton
+
 
 @contextmanager
 def get_db_session(db_url):
@@ -75,15 +77,16 @@ class DbApi(object):
                 db_session.delete(school)
 
     # -------------------Api for user table---------------------------
-    @staticmethod
-    def encrypt_password(password):
-        m = hashlib.md5()
-        m.update(password.encode("utf8"))
-        return m.hexdigest()
-
     def get_user(self, phone_no):
         with self.connect() as db_session:
             user = db_session.query(User).filter(User.phone_no == phone_no).with_lockmode('read').first()
+            return user.get() if user else None
+
+    def get_user_by_password(self, phone_no, password):
+        encrypted_password = generate_hash(password)
+        with self.connect() as db_session:
+            user = db_session.query(User).filter(and_(User.phone_no == phone_no, User.password == encrypted_password)).\
+                with_lockmode('read').first()
             return user.get() if user else None
 
     def insert_user(self, user):

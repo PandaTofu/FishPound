@@ -5,10 +5,13 @@
 # @Date    : 2018/11/04
 # @Author  : PandaTofu
 
-DB_URL = 'mysql+pymysql://%(user)s:%(passwd)s@%(url)s/%(dbname)s' \
-         % {'user': 'root', 'passwd': 'FishPound2019!', 'url': 'localhost', 'dbname': 'test'}
+from enum import Enum
 
-TYPE_TEACHER = 'Teacher'
-TYPE_PARENT = 'Parent'
+
+class AccountType(Enum):
+    unknown = 1
+    parent = 2
+    teacher = 3
+
 
 

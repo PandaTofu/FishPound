@@ -5,19 +5,14 @@
 # @Date    : 2019/02/20
 # @Author  : PandaTofu
 
-from flask import Blueprint, request, make_response, jsonify
-from fish_pound.utiltis import generate_hash
+from flask import Blueprint, request, make_response, jsonify, current_app
+from fish_pound.db_access.constants import AccountType
 from fish_pound.db_access.database import User
 from fish_pound.db_access.db_api import get_db_api
 from fish_pound.app.constants import *
+from fish_pound.app.api.user_manager import get_user_manager
 
 account_manager = Blueprint('account', __name__, url_prefix=URL_ACCOUNT_PREFIX)
-
-
-def authenticate(user_password, input_password):
-    encrypted_password = generate_hash(input_password)
-    result = (encrypted_password == user_password)
-    return result
 
 
 @account_manager.route(PATH_SCHOOL_LIST, methods=['GET'])
@@ -27,6 +22,10 @@ def get_school_list():
 
 @account_manager.route('/sign_up', methods=['POST'])
 def sign_up():
+    def get_response(result, error_code, http_code=HTTP_OK):
+        res_body = {'result': result, 'error_code': error_code}
+        return make_response(jsonify(res_body, http_code))
+
     phone_no = request.form.get('phone_number', None)
     password = request.form.get('password', None)
     account_type = request.form.get('account_type', None)
@@ -39,26 +38,30 @@ def sign_up():
     db_api = get_db_api()
     db_api.insert_user(user)
 
-    response = jsonify({"result": True, "error_code": EC_OK}, 200)
-    return make_response(response)
+    return get_response(True, EC_OK, HTTP_OK)
 
 
 @account_manager.route('/sign_in', methods=['POST'])
 def sign_in():
+    def get_response(result, error_code,
+                     account_type=AccountType.unknown.name,
+                     access_token=0,
+                     http_code=HTTP_OK):
+        res_body = {'result': result,
+                    'error_code': error_code,
+                    'type': account_type,
+                    'access_token': access_token}
+        return make_response(jsonify(res_body, http_code))
+
     phone_no = request.form.get('phone_number', None)
     password = request.form.get('password', None)
 
-    db_api = get_db_api()
-    user = db_api.get_user(phone_no)
-
-    result = authenticate(user.get('password'), password)
-    error_code = EC_OK
-    account_type = user.get('account_type', 'unknown')
-    access_token = 0
-    http_code = 200
-    res_body = {'result': result,
-                'error_code': error_code,
-                'type': account_type,
-                'access_token': access_token}
-
-    return make_response(jsonify(res_body, http_code))
+    user_manager = get_user_manager()
+    user = user_manager.authenticate_by_password(phone_no, password)
+    if user is None:
+        return get_response(False, EC_INVALID_CREDENTIAL)
+    else:
+        secret_key = current_app.config.get("SECRET_KEY")
+        token_life_time = current_app.config.get("TOKEN_LIFETIME")
+        token = user_manager.set_token(phone_no, password, secret_key, token_life_time)
+        return get_response(True, EC_OK, user.get('account_type'), token)
