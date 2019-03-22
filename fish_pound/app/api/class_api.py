@@ -6,16 +6,15 @@
 # @Author  : PandaTofu
 
 from flask import Blueprint, request, make_response, jsonify
-from fish_pound.db_access.db_api import get_db_api
 from fish_pound.db_access.database import Class
 from fish_pound.db_access.constants import AccountType
 from fish_pound.app.api.user_manager import get_user_manager, login_required
 from fish_pound.app.constants import *
 
-class_manager = Blueprint('class', __name__, url_prefix=URL_CLASS_PREFIX)
+class_api_manager = Blueprint('class', __name__, url_prefix=URL_CLASS_PREFIX)
 
 
-@class_manager.route('/list', methods=['GET'])
+@class_api_manager.route('/list', methods=['GET'])
 @login_required(allowed_scope=[AccountType.teacher.name])
 def get_class_list():
     def get_response(result, error_code, filtered_class_list, http_code=HTTP_OK):
@@ -36,7 +35,7 @@ def get_class_list():
     return get_response(True, EC_OK, class_list_page)
 
 
-@class_manager.route('/add', methods=['POST'])
+@class_api_manager.route('/add', methods=['POST'])
 def add_class():
 
     pass

@@ -6,11 +6,11 @@
 # @Author  : PandaTofu
 
 from flask import Flask
-from flask_login import LoginManager
 from werkzeug.contrib.cache import SimpleCache
 from fish_pound.db_access.db_api import DbApi
 from fish_pound.app.config import config
 from fish_pound.app.api.account_api import account_api_manager, login_manager
+from fish_pound.app.api.class_api import class_api_manager
 
 
 app_cache = SimpleCache()
@@ -33,6 +33,7 @@ def setup_app(app, app_config):
 
     # register blueprint
     app.register_blueprint(account_api_manager)
+    app.register_blueprint(class_api_manager)
 
 
 def create_app(config_key_name):

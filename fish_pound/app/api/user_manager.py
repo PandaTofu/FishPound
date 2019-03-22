@@ -11,8 +11,6 @@ from flask import request, make_response, jsonify, current_app
 from flask_login import LoginManager
 from itsdangerous import URLSafeSerializer
 from werkzeug.contrib.cache import SimpleCache
-from fish_pound.utils import singleton, get_browser_id
-from fish_pound.db_access.db_api import get_db_api
 from fish_pound.app.constants import HTTP_OK, EC_INVALID_CREDENTIAL, EC_NO_PERMISSION
 
 
