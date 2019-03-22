@@ -14,7 +14,6 @@ from werkzeug.contrib.cache import SimpleCache
 from fish_pound.app.constants import HTTP_OK, EC_INVALID_CREDENTIAL, EC_NO_PERMISSION
 
 
-@singleton
 class UserManager:
     def __init__(self, app=None):
         self.token_cache = SimpleCache()

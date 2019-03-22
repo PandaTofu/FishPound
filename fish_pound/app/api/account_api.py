@@ -11,7 +11,6 @@ from itsdangerous import URLSafeSerializer
 from fish_pound.db_access.constants import AccountType
 from fish_pound.db_access.database import User
 from fish_pound.app.constants import *
-from fish_pound.app.api.user_manager import get_user_manager
 from fish_pound.utils import get_client_id
 
 login_manager = LoginManager()
@@ -23,6 +22,14 @@ def create_token(request, phone_no, password, secret_key):
     client_id = get_client_id(request)
     token = serializer.dumps((phone_no, password, client_id))
     return token
+
+
+@login_manager.user_loader
+def user_loader(token):
+    secret_key = current_app.config['SECRET_KEY']
+    serializer = URLSafeSerializer(secret_key)
+    phone_no, password, _ = serializer.loads(token)
+    return current_app.db_api.get_user_by_password(phone_no, password)
 
 
 @login_manager.request_loader
