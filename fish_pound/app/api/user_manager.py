@@ -8,6 +8,7 @@
 
 from functools import wraps
 from flask import request, make_response, jsonify, current_app
+from flask_login import LoginManager
 from itsdangerous import URLSafeSerializer
 from werkzeug.contrib.cache import SimpleCache
 from fish_pound.utils import singleton, get_browser_id
@@ -17,8 +18,9 @@ from fish_pound.app.constants import HTTP_OK, EC_INVALID_CREDENTIAL, EC_NO_PERMI
 
 @singleton
 class UserManager:
-    def __init__(self):
+    def __init__(self, app=None):
         self.token_cache = SimpleCache()
+        self.login_manager = LoginManager()
         self.db_api = get_db_api()
 
     def set_token(self, phone_no, password, secret_key, life_time):

@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from sqlalchemy import and_
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-from fish_pound.db_access.database import School, User, Class, Notification, Homework
+from fish_pound.db_access.database import *
 from fish_pound.utils import generate_hash
 
 
@@ -42,8 +42,17 @@ def get_db_session(db_url):
 
 @singleton
 class DbApi(object):
-    def __init__(self, db_url):
-        self.db_url = db_url
+    def __init__(self):
+        self.db_url = ''
+
+    def init_app(self, app):
+        app.db_api = self
+
+        self.db_url = app.config.get('DB_URL', '')
+        engine = create_engine(self.db_url, encoding='utf-8', echo=True)
+        BaseModel.metadata.create_all(engine)
+
+
 
     def connect(self):
         return get_db_session(self.db_url)
@@ -193,7 +202,4 @@ class DbApi(object):
             if homework:
                 db_session.delete(homework)
 
-
-def get_db_api(db_url=None):
-    return DbApi(db_url)
 

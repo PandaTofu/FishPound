@@ -6,33 +6,41 @@
 # @Author  : PandaTofu
 
 from flask import Flask
-from sqlalchemy import create_engine
+from flask_login import LoginManager
 from werkzeug.contrib.cache import SimpleCache
-from fish_pound.db_access.database import *
-from fish_pound.db_access.db_api import *
+from fish_pound.db_access.db_api import DbApi
 from fish_pound.app.config import config
-from fish_pound.app.api.account_api import account_manager
+from fish_pound.app.api.account_api import account_api_manager, login_manager
 
 
 app_cache = SimpleCache()
 
 
-def init_db(app):
-    db_url = app.config['DB_URL']
-    engine = create_engine(db_url, encoding='utf-8', echo=True)
-    BaseModel.metadata.create_all(engine)
-    get_db_api(db_url)
+def setup_app(app, app_config):
+    # load app configuration
+    app.config.from_object(app_config)
 
+    # init db api
+    db_api = DbApi()
+    db_api.init_app(app)
 
-def init_app(app, config_key_name):
-    app.config.from_object(config[config_key_name])
-    app.register_blueprint(account_manager)
+    # init token cache
+    token_cache = SimpleCache()
+    app.token_cache = token_cache
+
+    # init login manager
+    login_manager.init_app(app)
+
+    # register blueprint
+    app.register_blueprint(account_api_manager)
 
 
 def create_app(config_key_name):
     app = Flask(__name__)
-    init_app(app, config_key_name)
-    init_db(app)
+
+    app_config = config[config_key_name]
+    setup_app(app, app_config)
+
     return app
 
 

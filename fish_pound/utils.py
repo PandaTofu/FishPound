@@ -6,7 +6,6 @@
 # @Author  : PandaTofu
 
 import hashlib
-from flask import request
 
 
 def singleton(cls):
@@ -26,7 +25,7 @@ def generate_hash(content):
     return m.hexdigest()
 
 
-def get_remote_addr():
+def get_remote_addr(request):
     """get remote client address"""
     address = request.headers.get('X-Forwarded-For', request.remote_addr)
     if not address:
@@ -34,11 +33,15 @@ def get_remote_addr():
     return address
 
 
-def get_browser_id():
+def get_client_id(request):
+    """
+    :param request: [flask request] request received from client
+    :return: [string] client browser id
+    """
     agent = request.headers.get('User-Agent')
     if not agent:
         agent = str(agent).encode('utf-8')
-    base_str = "%s|%s" % (get_remote_addr(), agent)
+    base_str = "%s|%s" % (get_remote_addr(request), agent)
     return generate_hash(base_str)
 
 
