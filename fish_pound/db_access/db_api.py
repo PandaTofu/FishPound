@@ -5,6 +5,7 @@
 # @Date    : 2018/11/04
 # @Author  : PandaTofu
 
+import copy
 from contextlib import contextmanager
 
 from sqlalchemy import and_
@@ -89,14 +90,14 @@ class DbApi(object):
     def get_user(self, phone_no):
         with self.connect() as db_session:
             user = db_session.query(User).filter(User.phone_no == phone_no).with_lockmode('read').first()
-            return user
+            return copy.deepcopy(user)
 
     def get_user_by_password(self, phone_no, password):
         encrypted_password = generate_hash(password)
         with self.connect() as db_session:
             user = db_session.query(User).filter(and_(User.phone_no == phone_no, User.password == encrypted_password)).\
                 with_lockmode('read').first()
-            return user
+            return copy.deepcopy(user)
 
     def insert_user(self, user):
         with self.connect() as db_session:
@@ -121,11 +122,13 @@ class DbApi(object):
     # -------------------Api for class table---------------------------
     def get_class(self, class_id):
         with self.connect() as db_session:
-            return db_session.query(Class).filter(Class.class_id == class_id).first()
+            db_class = db_session.query(Class).filter(Class.class_id == class_id).first()
+            return copy.deepcopy(db_class)
 
     def get_classes_by_teacher_id(self, teacher_id):
         with self.connect() as db_session:
-            return db_session.query(Class).filter(Class.teacher_id == teacher_id).all()
+            db_class_list = db_session.query(Class).filter(Class.teacher_id == teacher_id).all()
+            return copy.deepcopy(db_class_list)
 
     def insert_class(self, **kwargs):
         with self.connect() as db_session:

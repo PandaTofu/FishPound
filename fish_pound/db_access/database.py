@@ -30,7 +30,6 @@ class BaseModel(BaseModel):
 
     def get(self, key_name, default_value=None):
         return self.__dict__.get(key_name, default_value)
-        #attributes.pop('_sa_instance_state')
 
 
 class User(BaseModel):
