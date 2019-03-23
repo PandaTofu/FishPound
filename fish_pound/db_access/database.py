@@ -28,10 +28,9 @@ class BaseModel(BaseModel):
             if hasattr(self, key):
                 setattr(self, key, value)
 
-    def get(self):
-        attrs = copy.deepcopy(self.__dict__)
-        attrs.pop('_sa_instance_state')
-        return attrs
+    def get(self, key_name, default_value=None):
+        return self.__dict__.get(key_name, default_value)
+        #attributes.pop('_sa_instance_state')
 
 
 class User(BaseModel):
@@ -63,6 +62,7 @@ class User(BaseModel):
     def is_active(self):
         return self.activated
 
+    @property
     def is_authenticated(self):
         #"""假设已经通过验证"""
         return True

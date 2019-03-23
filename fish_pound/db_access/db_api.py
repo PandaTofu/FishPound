@@ -89,14 +89,14 @@ class DbApi(object):
     def get_user(self, phone_no):
         with self.connect() as db_session:
             user = db_session.query(User).filter(User.phone_no == phone_no).with_lockmode('read').first()
-            return user.get() if user else None
+            return user
 
     def get_user_by_password(self, phone_no, password):
         encrypted_password = generate_hash(password)
         with self.connect() as db_session:
             user = db_session.query(User).filter(and_(User.phone_no == phone_no, User.password == encrypted_password)).\
                 with_lockmode('read').first()
-            return user.get() if user else None
+            return user
 
     def insert_user(self, user):
         with self.connect() as db_session:
