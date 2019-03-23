@@ -21,7 +21,7 @@ def get_class_list():
         res_body = {'result': result, 'error_code': error_code, 'class_list': filtered_class_list}
         return make_response(jsonify(res_body, http_code))
 
-    max_item_number = request.form.get('max_item_number', None)
+    max_item_number = int(request.form.get('max_item_number', None))
 
     teacher_id = current_user.get('teacher_id')
     class_list = current_app.db_api.get_classes_by_teacher_id(teacher_id)
