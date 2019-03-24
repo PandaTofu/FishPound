@@ -17,7 +17,7 @@ class_api_manager = Blueprint('class', __name__, url_prefix=URL_CLASS_PREFIX)
 
 
 def generate_invitation_code(class_name, enroll_year):
-    name = class_name + '#' + enroll_year
+    name = class_name + '#' + str(enroll_year)
     namespace = uuid.uuid3(uuid.NAMESPACE_URL, name)
     new_uuid = uuid.uuid3(namespace, name)
     return new_uuid.hex.upper()
@@ -30,7 +30,7 @@ def get_class_list():
         res_body = {'result': result, 'error_code': error_code, 'class_list': filtered_class_list}
         return make_response(jsonify(res_body, http_code))
 
-    max_item_number = int(request.form.get('max_item_number', None))
+    max_item_number = request.form.get('max_item_number', type=int, default=None)
     teacher_id = current_user.get('teacher_id')
 
     class_list = current_app.db_api.get_classes_by_teacher_id(teacher_id)
@@ -42,8 +42,8 @@ def get_class_list():
 @class_api_manager.route('/add', methods=['POST'])
 @login_required
 def add_class():
-    class_name = request.form.get('class_name', None)
-    enroll_year = request.form.get('enroll_year', None)
+    class_name = request.form.get('class_name', default=None)
+    enroll_year = request.form.get('enroll_year', type=int, default=None)
     teacher_id = current_user.get('teacher_id')
     invitation_code = generate_invitation_code(class_name, enroll_year)
 
@@ -52,7 +52,6 @@ def add_class():
     current_app.db_api.insert_class(class_record)
 
     return create_response(EC_OK, {'class_id', 100})
-
 
 
 @class_api_manager.route(PATH_JOIN_CLASS, methods=['POST'])
