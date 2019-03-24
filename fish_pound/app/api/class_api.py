@@ -31,7 +31,7 @@ def get_class_list():
         return make_response(jsonify(res_body, http_code))
 
     max_item_number = request.form.get('max_item_number', type=int, default=None)
-    teacher_id = current_user.get('teacher_id')
+    teacher_id = current_user.teacher_id
 
     class_list = current_app.db_api.get_classes_by_teacher_id(teacher_id)
     class_list_page = class_list[0:max_item_number] if max_item_number < len(class_list) else class_list
@@ -45,7 +45,7 @@ def get_class_list():
 def add_class():
     class_name = request.form.get('class_name', default=None)
     enroll_year = request.form.get('enroll_year', type=int, default=None)
-    teacher_id = current_user.get('teacher_id')
+    teacher_id = current_user.teacher_id
     invitation_code = generate_invitation_code(class_name, enroll_year)
 
     class_record = Class(class_name=class_name, enroll_year=enroll_year,

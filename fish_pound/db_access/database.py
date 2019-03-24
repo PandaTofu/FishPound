@@ -32,7 +32,7 @@ class BaseModel(BaseModel):
     def data(self):
         data_dict = self.__dict__
         data_dict.pop('_sa_instance_state')
-        return data_dict
+        return copy.deepcopy(data_dict)
 
 
 class User(BaseModel):

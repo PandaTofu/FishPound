@@ -123,9 +123,8 @@ class DbApi(object):
     # -------------------Api for class table---------------------------
     def get_class(self, class_id):
         with self.connect() as db_session:
-            class_records = db_session.query(Class).filter(Class.class_id == class_id).with_lockmode('read').first()
-            class_list = [db_class.data for db_class in class_records]
-            return class_list
+            class_record = db_session.query(Class).filter(Class.class_id == class_id).with_lockmode('read').first()
+            return copy.deepcopy(class_record)
 
     def get_class_by_name_and_enroll_year(self, class_name, enroll_year):
         with self.connect() as db_session:
@@ -136,9 +135,10 @@ class DbApi(object):
 
     def get_classes_by_teacher_id(self, teacher_id):
         with self.connect() as db_session:
-            class_record_list = db_session.query(Class).filter(Class.teacher_id == teacher_id).\
+            class_records = db_session.query(Class).filter(Class.teacher_id == teacher_id).\
                 with_lockmode('read').all()
-            return copy.deepcopy(class_record_list)
+            class_list = [db_class.data for db_class in class_records]
+            return class_list
 
     def insert_class(self, class_record):
         class_name = class_record.class_name
