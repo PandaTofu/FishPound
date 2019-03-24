@@ -28,8 +28,11 @@ class BaseModel(BaseModel):
             if hasattr(self, key):
                 setattr(self, key, value)
 
-    def get(self, key_name, default_value=None):
-        return self.__dict__.get(key_name, default_value)
+    @property
+    def data(self):
+        data_dict = self.__dict__
+        data_dict.pop('_sa_instance_state')
+        return data_dict
 
 
 class User(BaseModel):
