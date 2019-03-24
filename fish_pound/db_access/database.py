@@ -87,7 +87,7 @@ class Class(BaseModel):
     class_name = Column(String(50), nullable=False)
     enroll_year = Column(Integer, nullable=False)
     teacher_id = Column(Integer, nullable=False)
-    invitation_code = Column(Integer, unique=True)
+    invitation_code = Column(String(32), unique=True)
 
 
 class Notification(BaseModel):
