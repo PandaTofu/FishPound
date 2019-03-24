@@ -16,8 +16,8 @@ from fish_pound.utils import create_response
 class_api_manager = Blueprint('class', __name__, url_prefix=URL_CLASS_PREFIX)
 
 
-def generate_invitation_code(class_name, enroll_year):
-    name = class_name + '#' + str(enroll_year)
+def generate_invitation_code(teach_id, class_name, enroll_year):
+    name = '#'.join([str(teach_id), class_name, str(enroll_year)])
     namespace = uuid.uuid3(uuid.NAMESPACE_URL, name)
     new_uuid = uuid.uuid3(namespace, name)
     return new_uuid.hex.upper()
@@ -46,7 +46,7 @@ def add_class():
     class_name = request.form.get('class_name', default=None)
     enroll_year = request.form.get('enroll_year', type=int, default=None)
     teacher_id = current_user.teacher_id
-    invitation_code = generate_invitation_code(class_name, enroll_year)
+    invitation_code = generate_invitation_code(teacher_id, class_name, enroll_year)
 
     class_record = Class(class_name=class_name, enroll_year=enroll_year,
                          teacher_id=teacher_id, invitation_code=invitation_code)
