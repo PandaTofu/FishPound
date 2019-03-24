@@ -35,7 +35,8 @@ class BaseModel(BaseModel):
 class User(BaseModel):
     __tablename__ = u'user'
 
-    phone_no = Column(String(20), primary_key=True)
+    user_id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
+    phone_no = Column(String(20), nullable=True)
     password = Column(String(50), nullable=False)
     account_type = Column(Enum(AccountType), nullable=False)
     user_name = Column(String(50))
@@ -54,20 +55,17 @@ class User(BaseModel):
         password_hash = generate_hash(self.password)
         self.update({"password": password_hash})
 
-    def get_token(self, secret_key, browser_id):
-        serializer = URLSafeSerializer(secret_key)
-        return serializer.dumps((self.phone_no, self.password, browser_id))
-
+    @property
     def is_active(self):
         return self.activated
 
     @property
     def is_authenticated(self):
-        #"""假设已经通过验证"""
+        # if not anonymous user, authenticated = True
         return True
 
+    @property
     def is_anonymous(self):
-        #"""具有登录名和密码的账号不是匿名用户"""
         return False
 
 
