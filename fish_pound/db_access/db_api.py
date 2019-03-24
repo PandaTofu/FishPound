@@ -140,9 +140,12 @@ class DbApi(object):
             return copy.deepcopy(class_record_list)
 
     def insert_class(self, class_record):
+        class_name = class_record.class_name
+        enroll_year = class_record.enroll_year
         with self.connect() as db_session:
             db_session.add(class_record)
-        added_class = self.get_class_by_name_and_enroll_year(class_record.class_name, class_record.enroll_year)
+
+        added_class = self.get_class_by_name_and_enroll_year(class_name, enroll_year)
         return added_class.class_id
 
     def update_class(self, class_id, **kwargs):

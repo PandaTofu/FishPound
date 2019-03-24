@@ -8,7 +8,6 @@
 from flask import Blueprint, request, make_response, jsonify, current_app
 from flask_login import LoginManager
 from itsdangerous import URLSafeSerializer
-from fish_pound.db_access.constants import AccountType
 from fish_pound.db_access.database import User
 from fish_pound.app.constants import *
 from fish_pound.utils import get_client_id, create_response
@@ -85,7 +84,7 @@ def sign_in():
         token_life_time = current_app.config.get("TOKEN_LIFETIME")
         access_token = create_token(request, phone_no, password, secret_key)
         current_app.token_cache.set(access_token, 1, token_life_time)
-        account_type = user.get('account_type').name
+        account_type = user.account_type.name
 
         data = {'account_type': account_type, 'access_token': access_token}
         return create_response(EC_OK, data)
