@@ -36,7 +36,8 @@ def get_class_list():
     class_list = current_app.db_api.get_classes_by_teacher_id(teacher_id)
     class_list_page = class_list[0:max_item_number] if max_item_number < len(class_list) else class_list
 
-    return get_response(True, EC_OK, class_list_page)
+    data = {'class_list': class_list_page}
+    return create_response(EC_OK, data)
 
 
 @class_api_manager.route('/add', methods=['POST'])
