@@ -95,7 +95,8 @@ class DbApi(object):
     def get_user_by_password(self, phone_no, password):
         encrypted_password = generate_hash(password)
         with self.connect() as db_session:
-            user = db_session.query(User).filter(and_(User.phone_no == phone_no, User.password == encrypted_password)).\
+            user = db_session.query(User).\
+                filter(and_(User.phone_no == phone_no, User.password == encrypted_password)).\
                 with_lockmode('read').first()
             return copy.deepcopy(user)
 
@@ -122,28 +123,38 @@ class DbApi(object):
     # -------------------Api for class table---------------------------
     def get_class(self, class_id):
         with self.connect() as db_session:
-            class_record = db_session.query(Class).filter(Class.class_id == class_id).first()
+            class_record = db_session.query(Class).filter(Class.class_id == class_id).with_lockmode('read').first()
+            return copy.deepcopy(class_record)
+
+    def get_class_by_name_and_enroll_year(self, class_name, enroll_year):
+        with self.connect() as db_session:
+            class_record = db_session.query(Class).\
+                filter(and_(Class.class_name == class_name, Class.enroll_year == enroll_year)).\
+                with_lockmode('read').first()
             return copy.deepcopy(class_record)
 
     def get_classes_by_teacher_id(self, teacher_id):
         with self.connect() as db_session:
-            class_record_list = db_session.query(Class).filter(Class.teacher_id == teacher_id).all()
+            class_record_list = db_session.query(Class).filter(Class.teacher_id == teacher_id).\
+                with_lockmode('read').all()
             return copy.deepcopy(class_record_list)
 
     def insert_class(self, class_record):
         with self.connect() as db_session:
             db_session.add(class_record)
+        added_class = self.get_class_by_name_and_enroll_year(class_record.class_name, class_record.enroll_year)
+        return added_class.class_id
 
     def update_class(self, class_id, **kwargs):
         with self.connect() as db_session:
-            class_record = db_session.query(Class).filter(Class.class_id == class_id).first()
+            class_record = db_session.query(Class).filter(Class.class_id == class_id).with_lockmode('update').first()
             if class_record:
                 class_record.update(kwargs)
                 class_record.validate()
 
     def delete_class(self, class_id):
         with self.connect() as db_session:
-            class_record = db_session.query(Class).filter(Class.class_id == class_id).first()
+            class_record = db_session.query(Class).filter(Class.class_id == class_id).with_lockmode('update').first()
             if class_record:
                 db_session.delete(class_record)
 

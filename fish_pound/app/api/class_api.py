@@ -49,9 +49,10 @@ def add_class():
 
     class_record = Class(class_name=class_name, enroll_year=enroll_year,
                          teacher_id=teacher_id, invitation_code=invitation_code)
-    current_app.db_api.insert_class(class_record)
+    class_id = current_app.db_api.insert_class(class_record)
 
-    return create_response(EC_OK, {'class_id', 100})
+    data = {'class_id': class_id}
+    return create_response(EC_OK, data)
 
 
 @class_api_manager.route(PATH_JOIN_CLASS, methods=['POST'])
