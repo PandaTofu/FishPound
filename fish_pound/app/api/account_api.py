@@ -11,7 +11,7 @@ from itsdangerous import URLSafeSerializer
 from fish_pound.db_access.constants import AccountType
 from fish_pound.db_access.database import User
 from fish_pound.app.constants import *
-from fish_pound.utils import get_client_id
+from fish_pound.utils import get_client_id, create_response
 
 login_manager = LoginManager()
 account_api_manager = Blueprint('account', __name__, url_prefix=URL_ACCOUNT_PREFIX)
@@ -58,10 +58,6 @@ def load_user_from_token(request):
 
 @account_api_manager.route('/sign_up', methods=['POST'])
 def sign_up():
-    def get_response(result, error_code, http_code=HTTP_OK):
-        res_body = {'result': result, 'error_code': error_code}
-        return make_response(jsonify(res_body, http_code))
-
     phone_no = request.form.get('phone_number', None)
     password = request.form.get('password', None)
     account_type = request.form.get('account_type', None)
@@ -73,31 +69,23 @@ def sign_up():
 
     current_app.db_api.insert_user(user)
 
-    return get_response(True, EC_OK, HTTP_OK)
+    return create_response(EC_OK)
 
 
 @account_api_manager.route('/sign_in', methods=['POST'])
 def sign_in():
-    def get_response(result, error_code,
-                     account_type_name=AccountType.unknown.name,
-                     access_token=0,
-                     http_code=HTTP_OK):
-        res_body = {'result': result,
-                    'error_code': error_code,
-                    'type': account_type_name,
-                    'access_token': access_token}
-        return make_response(jsonify(res_body, http_code))
-
     phone_no = request.form.get('phone_number', None)
     password = request.form.get('password', None)
 
     user = current_app.db_api.get_user_by_password(phone_no, password)
     if user is None:
-        return get_response(False, EC_INVALID_CREDENTIAL)
+        return create_response(EC_INVALID_CREDENTIAL)
     else:
         secret_key = current_app.config.get("SECRET_KEY")
         token_life_time = current_app.config.get("TOKEN_LIFETIME")
-        token = create_token(request, phone_no, password, secret_key)
-        current_app.token_cache.set(token, 1, token_life_time)
+        access_token = create_token(request, phone_no, password, secret_key)
+        current_app.token_cache.set(access_token, 1, token_life_time)
         account_type = user.get('account_type').name
-        return get_response(True, EC_OK, account_type, token)
+
+        data = {'account_type': account_type, 'access_token': access_token}
+        return create_response(EC_OK, data)

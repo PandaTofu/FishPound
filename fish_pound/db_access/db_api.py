@@ -122,18 +122,16 @@ class DbApi(object):
     # -------------------Api for class table---------------------------
     def get_class(self, class_id):
         with self.connect() as db_session:
-            db_class = db_session.query(Class).filter(Class.class_id == class_id).first()
-            return copy.deepcopy(db_class)
+            class_record = db_session.query(Class).filter(Class.class_id == class_id).first()
+            return copy.deepcopy(class_record)
 
     def get_classes_by_teacher_id(self, teacher_id):
         with self.connect() as db_session:
-            db_class_list = db_session.query(Class).filter(Class.teacher_id == teacher_id).all()
-            return copy.deepcopy(db_class_list)
+            class_record_list = db_session.query(Class).filter(Class.teacher_id == teacher_id).all()
+            return copy.deepcopy(class_record_list)
 
-    def insert_class(self, **kwargs):
+    def insert_class(self, class_record):
         with self.connect() as db_session:
-            class_record = Class(**kwargs)
-            class_record.validate()
             db_session.add(class_record)
 
     def update_class(self, class_id, **kwargs):

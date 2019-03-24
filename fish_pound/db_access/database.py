@@ -36,12 +36,12 @@ class User(BaseModel):
     __tablename__ = u'user'
 
     user_id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
-    phone_no = Column(String(20), nullable=True)
+    phone_no = Column(String(20), unique=True, nullable=True)
     password = Column(String(50), nullable=False)
     account_type = Column(Enum(AccountType), nullable=False)
-    user_name = Column(String(50))
+    user_name = Column(String(50), unique=True)
     school_id = Column(Integer)
-    teacher_id = Column(Integer)
+    teacher_id = Column(Integer, unique=True)
     activated = Column(Boolean, default=False)
 
     def validate(self):
@@ -54,6 +54,9 @@ class User(BaseModel):
 
         password_hash = generate_hash(self.password)
         self.update({"password": password_hash})
+
+    def get_id(self):
+        return self.user_id
 
     @property
     def is_active(self):
@@ -81,10 +84,10 @@ class Class(BaseModel):
     __tablename__ = 'class'
 
     class_id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
-    class_name = Column(String(50))
-    enroll_year = Column(Integer)
-    teacher_id = Column(Integer)
-    invitation_code = Column(Integer)
+    class_name = Column(String(50), nullable=False)
+    enroll_year = Column(Integer, nullable=False)
+    teacher_id = Column(Integer, nullable=False)
+    invitation_code = Column(Integer, unique=True)
 
 
 class Notification(BaseModel):

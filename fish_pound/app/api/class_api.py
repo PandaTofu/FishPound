@@ -5,13 +5,22 @@
 # @Date    : 2019/02/20
 # @Author  : PandaTofu
 
-from flask import Blueprint, request, make_response, jsonify, current_app
+import uuid
+from flask import Blueprint, request, make_response, jsonify, current_app, abort
 from flask_login import login_required, current_user
 from fish_pound.db_access.database import Class
 from fish_pound.db_access.constants import AccountType
 from fish_pound.app.constants import *
+from fish_pound.utils import create_response
 
 class_api_manager = Blueprint('class', __name__, url_prefix=URL_CLASS_PREFIX)
+
+
+def generate_invitation_code(class_name, enroll_year):
+    name = class_name + '#' + enroll_year
+    namespace = uuid.uuid3(uuid.NAMESPACE_URL, name)
+    new_uuid = uuid.uuid3(namespace, name)
+    return new_uuid.hex.upper()
 
 
 @class_api_manager.route('/list', methods=['GET'])
@@ -22,8 +31,8 @@ def get_class_list():
         return make_response(jsonify(res_body, http_code))
 
     max_item_number = int(request.form.get('max_item_number', None))
-
     teacher_id = current_user.get('teacher_id')
+
     class_list = current_app.db_api.get_classes_by_teacher_id(teacher_id)
     class_list_page = class_list[0:max_item_number] if max_item_number < len(class_list) else class_list
 
@@ -31,14 +40,19 @@ def get_class_list():
 
 
 @class_api_manager.route('/add', methods=['POST'])
+@login_required
 def add_class():
+    class_name = request.form.get('class_name', None)
+    enroll_year = request.form.get('enroll_year', None)
+    teacher_id = current_user.get('teacher_id')
+    invitation_code = generate_invitation_code(class_name, enroll_year)
 
-    pass
+    class_record = Class(class_name=class_name, enroll_year=enroll_year,
+                         teacher_id=teacher_id, invitation_code=invitation_code)
+    current_app.db_api.insert_class(class_record)
 
+    return create_response(EC_OK, {'class_id', 100})
 
-@class_api_manager.route(PATH_INVITATION_CODE, methods=['POST'])
-def generate_invitation_code():
-    pass
 
 
 @class_api_manager.route(PATH_JOIN_CLASS, methods=['POST'])
