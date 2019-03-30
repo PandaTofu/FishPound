@@ -22,14 +22,14 @@ class UserApiManager(object):
 
     def init_app(self, app):
         self.app = app
-        self.security_service = Security(app)
-        self.configure_login_manager()
+        self.security_service = Security()
+        self.init_security_service()
         self.register_blueprint()
 
-    def configure_login_manager(self):
-        login_manager = self.security_service.login_manager
-        login_manager.user_loader(self._load_auth_token)
-        login_manager.request_loader(self._request_loader)
+    def init_security_service(self):
+        self.security_service._state = self.security_service.init_app(self.app)
+        self.security_service.login_manager.user_loader(self._load_auth_token)
+        self.security_service.login_manager.request_loader(self._request_loader)
 
     def register_blueprint(self):
         bp = Blueprint('user', __name__, url_prefix=URL_USER_PREFIX)
@@ -40,10 +40,10 @@ class UserApiManager(object):
         self.app.register_blueprint(bp)
         return bp
 
-    def _get_auth_token(self, user):
+    def _get_auth_token(self, phone_no, password):
         current_time = time.time()
         serializer = self.security_service.remember_token_serializer
-        return serializer.dumps((user.phone_no, user.password, current_time))
+        return serializer.dumps((phone_no, password, current_time))
 
     def _load_auth_token(self, token):
         serializer = self.security_service.remember_token_serializer
@@ -107,7 +107,7 @@ class UserApiManager(object):
             print("Password is incorrect")
             return create_response(EC_INVALID_CREDENTIAL)
 
-        auth_token = self._get_auth_token(user)
+        auth_token = self._get_auth_token(phone_no, password)
         token_life_time = current_app.config.get("SECRET_TOKEN_LIFETIME")
         client_id = get_client_id(request)
         self.app.token_cache.set(auth_token, client_id, token_life_time)
