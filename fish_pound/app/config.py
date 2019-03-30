@@ -12,7 +12,8 @@ class Config:
     PORT = 443
     DEBUG = True
     SECRET_KEY = 'dnuoPhsiF'
-    TOKEN_LIFETIME = 3600
+    SECRET_REMEMBER_SALT = 'toBeOrNotToBe'
+    SECRET_TOKEN_LIFETIME = 3600
 
 
 class ProConfig(Config):

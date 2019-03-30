@@ -12,18 +12,7 @@ from sqlalchemy import and_
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from fish_pound.db_access.database import *
-from fish_pound.utils import generate_hash
-
-
-def singleton(cls):
-    _instance = {}
-
-    def _singleton(*args, **kargs):
-        if cls not in _instance:
-            _instance[cls] = cls(*args, **kargs)
-        return _instance[cls]
-
-    return _singleton
+from fish_pound.utils import generate_hash, singleton
 
 
 @contextmanager
@@ -52,8 +41,6 @@ class DbApi(object):
         self.db_url = app.config.get('DB_URL', '')
         engine = create_engine(self.db_url, encoding='utf-8', echo=True)
         BaseModel.metadata.create_all(engine)
-
-
 
     def connect(self):
         return get_db_session(self.db_url)
@@ -87,17 +74,9 @@ class DbApi(object):
                 db_session.delete(school)
 
     # -------------------Api for user table---------------------------
-    def get_user(self, phone_no):
+    def get_user_by_phone_no(self, phone_no=None):
         with self.connect() as db_session:
             user = db_session.query(User).filter(User.phone_no == phone_no).with_lockmode('read').first()
-            return copy.deepcopy(user)
-
-    def get_user_by_password(self, phone_no, password):
-        encrypted_password = generate_hash(password)
-        with self.connect() as db_session:
-            user = db_session.query(User).\
-                filter(and_(User.phone_no == phone_no, User.password == encrypted_password)).\
-                with_lockmode('read').first()
             return copy.deepcopy(user)
 
     def insert_user(self, user):

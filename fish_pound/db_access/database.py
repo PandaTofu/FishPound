@@ -58,8 +58,16 @@ class User(BaseModel):
         password_hash = generate_hash(self.password)
         self.update({"password": password_hash})
 
+    def verify_password(self, compare_password):
+        compare_password_hash = generate_hash(compare_password)
+        return compare_password_hash == self.password
+
     def get_id(self):
         return self.user_id
+
+    @property
+    def roles(self):
+        return self.account_type
 
     @property
     def is_active(self):

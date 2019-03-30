@@ -9,8 +9,8 @@ from flask import Flask
 from werkzeug.contrib.cache import SimpleCache
 from fish_pound.db_access.db_api import DbApi
 from fish_pound.app.config import config
-from fish_pound.app.api.account_api import account_api_manager, login_manager
-from fish_pound.app.api.class_api import class_api_manager
+from fish_pound.app.api_managers.user_api_manager import UserApiManager
+from fish_pound.app.api_managers.class_api_manager import ClassApiManager
 
 
 app_cache = SimpleCache()
@@ -20,7 +20,7 @@ def setup_app(app, app_config):
     # load app configuration
     app.config.from_object(app_config)
 
-    # init db api
+    # init db api_managers
     db_api = DbApi()
     db_api.init_app(app)
 
@@ -28,12 +28,13 @@ def setup_app(app, app_config):
     token_cache = SimpleCache()
     app.token_cache = token_cache
 
-    # init login manager
-    login_manager.init_app(app)
+    # init user api
+    user_api = UserApiManager()
+    user_api.init_app(app)
 
-    # register blueprint
-    app.register_blueprint(account_api_manager)
-    app.register_blueprint(class_api_manager)
+    # init class api
+    class_api = ClassApiManager()
+    class_api.init_app(app)
 
 
 def create_app(config_key_name):

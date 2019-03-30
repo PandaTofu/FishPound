@@ -47,13 +47,16 @@ def get_client_id(request):
     return generate_hash(base_str)
 
 
-def create_response(return_code, data=''):
+def create_response(return_code, data=None):
     """
     :param return_code: the error code return by app server
-    :param data: response data, different api return different data
+    :param data: response data, different api_managers return different data
     :return: http response
     """
-    res_body = {'return_code': return_code, 'data': json.dumps(data)}
+    res_body = {'return_code': return_code}
+    if data:
+        res_body['data'] = data
+
     return make_response(jsonify(res_body, 200))
 
 
