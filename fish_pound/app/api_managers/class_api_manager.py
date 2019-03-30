@@ -41,7 +41,7 @@ class ClassApiManager(object):
         new_uuid = uuid.uuid3(namespace, name)
         return new_uuid.hex.upper()
 
-    @login_required()
+    @login_required
     def get_class_list(self):
         max_item_number = request.form.get('max_item_number', type=int, default=None)
         teacher_id = request.form.get('teacher_id', type=int, default=current_user.teacher_id)
