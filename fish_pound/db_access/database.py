@@ -66,8 +66,12 @@ class User(BaseModel):
         return self.user_id
 
     @property
+    def id(self):
+        return self.user_id
+
+    @property
     def roles(self):
-        return self.account_type
+        return [self.account_type]
 
     @property
     def is_active(self):

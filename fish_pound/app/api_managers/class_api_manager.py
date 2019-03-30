@@ -8,7 +8,7 @@
 import uuid
 from flask import Blueprint, request, make_response, jsonify, current_app, abort
 from flask_login import login_required, current_user
-from flask_security.decorators import login_required, roles_required
+from flask_security.decorators import login_required, roles_accepted
 from fish_pound.db_access.database import Class
 from fish_pound.db_access.constants import AccountType
 from fish_pound.app.constants import *
@@ -42,6 +42,7 @@ class ClassApiManager(object):
         return new_uuid.hex.upper()
 
     @login_required
+    @roles_accepted(AccountType.teacher.name)
     def get_class_list(self):
         max_item_number = request.form.get('max_item_number', type=int, default=None)
         teacher_id = request.form.get('teacher_id', type=int, default=current_user.teacher_id)
@@ -53,6 +54,7 @@ class ClassApiManager(object):
         return create_response(EC_OK, data)
 
     @login_required
+    @roles_accepted(AccountType.teacher.name)
     def add_class(self):
         class_name = request.form.get('class_name', default=None)
         enroll_year = request.form.get('enroll_year', type=int, default=None)
