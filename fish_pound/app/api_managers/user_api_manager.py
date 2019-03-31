@@ -15,12 +15,17 @@ from fish_pound.app.api_managers.base_api_manager import BaseApiManager
 
 
 class UserApiManager(BaseApiManager):
-    def __init__(self, app=None, bp_name='class', url_prefix=URL_CLASS_PREFIX):
+    def __init__(self, app=None, bp_name='user', url_prefix=URL_USER_PREFIX):
+        self.security_service = None
         BaseApiManager.__init__(self, app, bp_name, url_prefix)
-        self.security_service = Security()
 
     def init_app(self, app):
-        BaseApiManager.init_app(self, app)
+        if app is None:
+            return
+
+        self.app = app
+        self.init_routers()
+        self.register_blueprint()
         self.init_security_service()
 
     def init_routers(self):
@@ -28,6 +33,7 @@ class UserApiManager(BaseApiManager):
         self.add_route('/sign_in', ['POST'], '_sign_in')
 
     def init_security_service(self):
+        self.security_service = Security()
         self.security_service._state = self.security_service.init_app(self.app)
         self.security_service.login_manager.user_loader(self._load_auth_token)
         self.security_service.login_manager.request_loader(self._request_loader)
