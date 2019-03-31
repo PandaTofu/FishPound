@@ -26,8 +26,8 @@ class ClassApiManager(BaseApiManager):
         self.add_route('/join', ['POST'], 'join_class_room')
 
     @staticmethod
-    def get_invitation_code(head_teach_id, class_name, enroll_year):
-        name = '#'.join([str(head_teach_id), class_name, str(enroll_year)])
+    def get_invitation_code(head_teach_id, class_room_name, enroll_year):
+        name = '#'.join([str(head_teach_id), class_room_name, str(enroll_year)])
         namespace = uuid.uuid3(uuid.NAMESPACE_URL, name)
         new_uuid = uuid.uuid3(namespace, name)
         return new_uuid.hex.upper()
@@ -50,16 +50,16 @@ class ClassApiManager(BaseApiManager):
     @login_required
     @roles_accepted(AccountType.teacher.name)
     def add_class_room(self):
-        class_name = request.form.get('class_name', default=None)
+        class_room_name = request.form.get('name', default=None)
         enroll_year = request.form.get('enroll_year', type=int, default=None)
-        head_teacher_id = request.form.get('head_teacher_id', type=int, default=current_user.teacher_id)
-        invitation_code = self.get_invitation_code(head_teacher_id, class_name, enroll_year)
+        head_teacher_id = request.form.get('head_teacher_id', type=int, default=current_user.teacher_cert_id)
+        invitation_code = self.get_invitation_code(head_teacher_id, class_room_name, enroll_year)
 
-        class_room = ClassRoom(class_name=class_name, enroll_year=enroll_year, head_teacher_id=head_teacher_id,
+        class_room = ClassRoom(class_name=class_room_name, enroll_year=enroll_year, head_teacher_id=head_teacher_id,
                                invitation_code=invitation_code)
-        class_id = self.app.db_api.insert_class_room(class_room)
+        self.app.db_api.insert_class_room(class_room)
 
-        data = {'class_id': class_id}
+        data = {'invitation_code': invitation_code}
         return create_response(EC_OK, data)
 
     @login_required

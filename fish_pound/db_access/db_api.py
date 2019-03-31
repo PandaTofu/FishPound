@@ -106,13 +106,6 @@ class DbApi(object):
                 filter(ClassRoom.id == class_id).with_lockmode('read').first()
             return copy.deepcopy(class_room)
 
-    def get_class_room_by_name_and_enroll_year(self, name, enroll_year):
-        with self.connect() as db_session:
-            class_room = db_session.query(ClassRoom).\
-                filter(and_(ClassRoom.name == name, ClassRoom.enroll_year == enroll_year)).\
-                with_lockmode('read').first()
-            return copy.deepcopy(class_room)
-
     def get_class_rooms_by_head_teacher(self, head_teacher_id):
         with self.connect() as db_session:
             class_rooms = db_session.query(ClassRoom).filter(ClassRoom.head_teacher_id == head_teacher_id).\
@@ -127,13 +120,8 @@ class DbApi(object):
             return copy.deepcopy(class_room)
 
     def insert_class_room(self, class_room):
-        name = class_room.name
-        enroll_year = class_room.enroll_year
         with self.connect() as db_session:
             db_session.add(class_room)
-
-        added_class = self.get_class_by_name_and_enroll_year(name, enroll_year)
-        return added_class.class_id
 
     def update_class_room(self, class_id, **kwargs):
         with self.connect() as db_session:
