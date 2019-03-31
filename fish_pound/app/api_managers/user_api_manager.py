@@ -6,7 +6,7 @@
 # @Author  : PandaTofu
 
 import time
-from flask import Blueprint, request, make_response, jsonify, current_app
+from flask import Blueprint, request, make_response, jsonify, abort
 from flask_security.core import Security
 from fish_pound.utils import get_client_id, create_response
 from fish_pound.db_access.database import User
@@ -17,6 +17,8 @@ from fish_pound.app.api_managers.base_api_manager import BaseApiManager
 class UserApiManager(BaseApiManager):
     def __init__(self, app=None, bp_name='user', url_prefix=URL_USER_PREFIX):
         self.security_service = None
+        self.login_unauthorized_callback = None
+        self.token_unauthorized_callback = None
         BaseApiManager.__init__(self, app, bp_name, url_prefix)
 
     def init_app(self, app):
@@ -37,6 +39,8 @@ class UserApiManager(BaseApiManager):
         self.security_service._state = self.security_service.init_app(self.app)
         self.security_service.login_manager.user_loader(self._load_auth_token)
         self.security_service.login_manager.request_loader(self._request_loader)
+        self.login_unauthorized_handler(self._login_unauthorized_handler)
+        self.token_unauthorized_handler(self._token_unauthorized_handler)
 
     def _get_auth_token(self, phone_no, password):
         current_time = time.time()
@@ -106,12 +110,30 @@ class UserApiManager(BaseApiManager):
             return create_response(EC_INVALID_CREDENTIAL)
 
         auth_token = self._get_auth_token(phone_no, password)
-        token_life_time = current_app.config.get("SECRET_TOKEN_LIFETIME")
+        token_life_time = self.app.config.get("SECRET_TOKEN_LIFETIME")
         client_id = get_client_id(request)
         self.app.token_cache.set(auth_token, client_id, token_life_time)
 
         data = {'account_type': user.account_type.name, 'access_token': auth_token}
         return create_response(EC_OK, data)
 
+    @staticmethod
+    def _login_unauthorized_handler():
+        print('invalid credential.')
+        abort(401)
 
+    @staticmethod
+    def _token_unauthorized_handler():
+        print('permission deny.')
+        abort(401)
+
+    def login_unauthorized_handler(self, callback):
+        self.login_unauthorized_callback = callback
+        self.security_service.login_manager.unauthorized_handler(self.login_unauthorized_callback)
+        return callback
+
+    def token_unauthorized_handler(self, callback):
+        self.token_unauthorized_callback = callback
+        self.security_service.unauthorized_handler(self.token_unauthorized_callback)
+        return callback
 
