@@ -90,10 +90,10 @@ class UserApiManager(BaseApiManager):
         account_type = request.form.get('account_type', None)
         nick_name = request.form.get('nick_name', None)
         school_id = request.form.get('school_id', None)
-        teacher_id = request.form.get('teacher_id', None)
+        teacher_cert_id = request.form.get('teacher_cert_id', None)
 
         user = User(phone_no=phone_no, password=password, account_type=account_type,
-                    nick_name=nick_name, school_id=school_id, teacher_id=teacher_id)
+                    nick_name=nick_name, school_id=school_id, teacher_cert_id=teacher_cert_id)
         self.app.db_api.insert_user(user)
 
         return create_response(EC_OK)

@@ -68,8 +68,8 @@ class User(BaseModel):
     class_room = relationship('ClassRoom', backref=backref('members', order_by=id))
 
     def validate(self):
-        if self.account_type == AccountType.teacher.name and self.teacher_id is None:
-            raise ValueError("No teacher_id for user[%s]" % self.phone_no)
+        if self.account_type == AccountType.teacher.name and self.teacher_cert_id is None:
+            raise ValueError("No teacher_cert_id for user[%s]" % self.phone_no)
 
     def encrypt_password(self):
         if self.password is None:
