@@ -8,37 +8,29 @@
 import time
 from flask import Blueprint, request, make_response, jsonify, current_app
 from flask_security.core import Security
+from fish_pound.utils import get_client_id, create_response
 from fish_pound.db_access.database import User
 from fish_pound.app.constants import *
-from fish_pound.utils import get_client_id, create_response
+from fish_pound.app.api_managers.base_api_manager import BaseApiManager
 
 
-class UserApiManager(object):
-    def __init__(self, app=None):
-        self.app = None
-        self.security_service = None
-        if app is not None:
-            self.init_app(app)
+class UserApiManager(BaseApiManager):
+    def __init__(self, app=None, bp_name='class', url_prefix=URL_CLASS_PREFIX):
+        BaseApiManager.__init__(self, app, bp_name, url_prefix)
+        self.security_service = Security()
 
     def init_app(self, app):
-        self.app = app
-        self.security_service = Security()
+        BaseApiManager.init_app(self, app)
         self.init_security_service()
-        self.register_blueprint()
+
+    def init_routers(self):
+        self.add_route('/sign_up', ['POST'], '_sign_up')
+        self.add_route('/sign_in', ['POST'], '_sign_in')
 
     def init_security_service(self):
         self.security_service._state = self.security_service.init_app(self.app)
         self.security_service.login_manager.user_loader(self._load_auth_token)
         self.security_service.login_manager.request_loader(self._request_loader)
-
-    def register_blueprint(self):
-        bp = Blueprint('user', __name__, url_prefix=URL_USER_PREFIX)
-
-        bp.route('/sign_up', methods=['POST'])(self._sign_up)
-        bp.route('/sign_in', methods=['POST'])(self._sign_in)
-
-        self.app.register_blueprint(bp)
-        return bp
 
     def _get_auth_token(self, phone_no, password):
         current_time = time.time()

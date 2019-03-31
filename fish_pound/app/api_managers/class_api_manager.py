@@ -9,30 +9,20 @@ import uuid
 from flask import Blueprint, request, make_response, jsonify, current_app, abort
 from flask_login import login_required, current_user
 from flask_security.decorators import login_required, roles_accepted
+from fish_pound.utils import create_response
 from fish_pound.db_access.database import Class
 from fish_pound.db_access.constants import AccountType
 from fish_pound.app.constants import *
-from fish_pound.utils import create_response
+from fish_pound.app.api_managers.base_api_manager import BaseApiManager
 
 
-class ClassApiManager(object):
-    def __init__(self, app=None):
-        self.app = None
-        if app is not None:
-            self.init_app(app)
+class ClassApiManager(BaseApiManager):
+    def __init__(self, app=None, bp_name='class', url_prefix=URL_CLASS_PREFIX):
+        BaseApiManager.__init__(self, app, bp_name, url_prefix)
 
-    def init_app(self, app):
-        self.app = app
-        self.register_blueprint()
-
-    def register_blueprint(self):
-        bp = Blueprint('class', __name__, url_prefix=URL_CLASS_PREFIX)
-
-        bp.route('/list', methods=['GET'])(self.get_class_list)
-        bp.route('/add', methods=['POST'])(self.add_class)
-
-        self.app.register_blueprint(bp)
-        return bp
+    def init_routers(self):
+        self.add_route('/list', ['GET'], 'get_class_list')
+        self.add_route('/add', ['POST'], 'add_class')
 
     @staticmethod
     def get_invitation_code(teach_id, class_name, enroll_year):
