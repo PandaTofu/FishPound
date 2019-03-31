@@ -8,7 +8,8 @@
 import copy
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Text, Boolean, Enum, ForeignKey, relationship, backref
+from sqlalchemy import Column, Integer, String, Text, Boolean, Enum, ForeignKey
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.dialects.mysql import INTEGER
 from fish_pound.db_access.constants import AccountType
 from fish_pound.utils import generate_hash
@@ -63,7 +64,7 @@ class User(BaseModel):
     school_id = Column(Integer)
     teacher_cert_id = Column(Integer, unique=True)
     activated = Column(Boolean, default=False)
-    class_room_id = Column(Integer, ForeignKey('class_room.id'))
+    class_room_id = Column(INTEGER(unsigned=True), ForeignKey('class_room.id'))
     class_room = relationship('ClassRoom', backref=backref('members', order_by=id))
 
     def validate(self):

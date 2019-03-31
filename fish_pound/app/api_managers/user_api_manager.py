@@ -88,12 +88,12 @@ class UserApiManager(BaseApiManager):
         phone_no = request.form.get('phone_number', None)
         password = request.form.get('password', None)
         account_type = request.form.get('account_type', None)
-        user_name = request.form.get('user_name', None)
+        nick_name = request.form.get('nick_name', None)
         school_id = request.form.get('school_id', None)
         teacher_id = request.form.get('teacher_id', None)
 
         user = User(phone_no=phone_no, password=password, account_type=account_type,
-                    user_name=user_name, school_id=school_id, teacher_id=teacher_id)
+                    nick_name=nick_name, school_id=school_id, teacher_id=teacher_id)
         self.app.db_api.insert_user(user)
 
         return create_response(EC_OK)
