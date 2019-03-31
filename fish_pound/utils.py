@@ -47,7 +47,7 @@ def get_client_id(request):
     return generate_hash(base_str)
 
 
-def create_response(return_code=None, data=None, status_code=200):
+def create_response(error_code=None, data=None, status_code=200):
     """
     :param return_code: the error code return by app server
     :param data: response data, different api_managers return different data
@@ -55,8 +55,8 @@ def create_response(return_code=None, data=None, status_code=200):
     :return: http response
     """
     res_body = dict()
-    if return_code:
-        res_body['return_code'] = return_code
+    if error_code:
+        res_body['error_code'] = error_code
     if data:
         res_body['data'] = data
 

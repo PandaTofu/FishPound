@@ -7,9 +7,8 @@
 
 import copy
 
-from itsdangerous import URLSafeSerializer
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Text, Boolean, Enum
+from sqlalchemy import Column, Integer, String, Text, Boolean, Enum, ForeignKey, relationship, backref
 from sqlalchemy.dialects.mysql import INTEGER
 from fish_pound.db_access.constants import AccountType
 from fish_pound.utils import generate_hash
@@ -35,17 +34,37 @@ class BaseModel(BaseModel):
         return copy.deepcopy(data_dict)
 
 
+class School(BaseModel):
+    __tablename__ = 'school'
+
+    school_id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
+    school_name = Column(String(50))
+    address = Column(String(100))
+
+
+class ClassRoom(BaseModel):
+    __tablename__ = 'class_room'
+
+    id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
+    name = Column(String(50), nullable=False)
+    enroll_year = Column(Integer, nullable=False)
+    invitation_code = Column(String(32), unique=True)
+    head_teacher_id = Column(Integer, nullable=False)
+
+
 class User(BaseModel):
     __tablename__ = u'user'
 
-    user_id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
+    id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
     phone_no = Column(String(20), unique=True, nullable=True)
     password = Column(String(50), nullable=False)
     account_type = Column(Enum(AccountType), nullable=False)
-    user_name = Column(String(50), unique=True)
+    nick_name = Column(String(50), unique=True)
     school_id = Column(Integer)
-    teacher_id = Column(Integer, unique=True)
+    teacher_cert_id = Column(Integer, unique=True)
     activated = Column(Boolean, default=False)
+    class_room_id = Column(Integer, ForeignKey('class_room.id'))
+    class_room = relationship('ClassRoom', backref=backref('members', order_by=id))
 
     def validate(self):
         if self.account_type == AccountType.teacher.name and self.teacher_id is None:
@@ -63,11 +82,7 @@ class User(BaseModel):
         return compare_password_hash == self.password
 
     def get_id(self):
-        return self.user_id
-
-    @property
-    def id(self):
-        return self.user_id
+        return self.id
 
     @property
     def roles(self):
@@ -87,42 +102,21 @@ class User(BaseModel):
         return False
 
 
-class School(BaseModel):
-    __tablename__ = 'school'
-
-    school_id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
-    school_name = Column(String(50))
-    address = Column(String(100))
-
-
-class Class(BaseModel):
-    __tablename__ = 'class'
-
-    class_id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
-    class_name = Column(String(50), nullable=False)
-    enroll_year = Column(Integer, nullable=False)
-    teacher_id = Column(Integer, nullable=False)
-    invitation_code = Column(String(32), unique=True)
-
-
 class Notification(BaseModel):
     __tablename__ = 'notification'
 
-    notification_id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
+    id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
     title = Column(String(100))
     date = Column(String(50))
     content = Column(Text)
     class_id = Column(Integer)
     allow_update = Column(Boolean)
 
-    def is_allow_update(self):
-        return self.allow_update
-
 
 class Homework(BaseModel):
     __tablename__ = 'homework'
 
-    homework_id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
+    id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
     title = Column(String(100))
     date = Column(String(50))
     course = Column(String(50))
@@ -132,3 +126,5 @@ class Homework(BaseModel):
 
     def is_allow_update(self):
         return self.allow_update
+
+

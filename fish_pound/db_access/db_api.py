@@ -100,46 +100,54 @@ class DbApi(object):
                 db_session.delete(user)
 
     # -------------------Api for class table---------------------------
-    def get_class(self, class_id):
+    def get_class_room(self, class_id):
         with self.connect() as db_session:
-            class_record = db_session.query(Class).filter(Class.class_id == class_id).with_lockmode('read').first()
-            return copy.deepcopy(class_record)
+            class_room = db_session.query(ClassRoom).\
+                filter(ClassRoom.id == class_id).with_lockmode('read').first()
+            return copy.deepcopy(class_room)
 
-    def get_class_by_name_and_enroll_year(self, class_name, enroll_year):
+    def get_class_room_by_name_and_enroll_year(self, name, enroll_year):
         with self.connect() as db_session:
-            class_record = db_session.query(Class).\
-                filter(and_(Class.class_name == class_name, Class.enroll_year == enroll_year)).\
+            class_room = db_session.query(ClassRoom).\
+                filter(and_(ClassRoom.name == name, ClassRoom.enroll_year == enroll_year)).\
                 with_lockmode('read').first()
-            return copy.deepcopy(class_record)
+            return copy.deepcopy(class_room)
 
-    def get_classes_by_teacher_id(self, teacher_id):
+    def get_class_rooms_by_head_teacher(self, head_teacher_id):
         with self.connect() as db_session:
-            class_records = db_session.query(Class).filter(Class.teacher_id == teacher_id).\
+            class_rooms = db_session.query(ClassRoom).filter(ClassRoom.head_teacher_id == head_teacher_id).\
                 with_lockmode('read').all()
-            class_list = [db_class.data for db_class in class_records]
-            return class_list
+            class_room_list = [db_class.data for db_class in class_rooms]
+            return class_room_list
 
-    def insert_class(self, class_record):
-        class_name = class_record.class_name
-        enroll_year = class_record.enroll_year
+    def get_class_room_by_invitation_code(self, invitation_code):
         with self.connect() as db_session:
-            db_session.add(class_record)
+            class_room = db_session.query(ClassRoom).\
+                filter(ClassRoom.invitation_code == invitation_code).with_lockmode('read').first()
+            return copy.deepcopy(class_room)
 
-        added_class = self.get_class_by_name_and_enroll_year(class_name, enroll_year)
+    def insert_class_room(self, class_room):
+        name = class_room.name
+        enroll_year = class_room.enroll_year
+        with self.connect() as db_session:
+            db_session.add(class_room)
+
+        added_class = self.get_class_by_name_and_enroll_year(name, enroll_year)
         return added_class.class_id
 
-    def update_class(self, class_id, **kwargs):
+    def update_class_room(self, class_id, **kwargs):
         with self.connect() as db_session:
-            class_record = db_session.query(Class).filter(Class.class_id == class_id).with_lockmode('update').first()
-            if class_record:
-                class_record.update(kwargs)
-                class_record.validate()
+            class_room = db_session.query(ClassRoom).\
+                filter(ClassRoom.id == class_id).with_lockmode('update').first()
+            if class_room:
+                class_room.update(kwargs)
+                class_room.validate()
 
-    def delete_class(self, class_id):
+    def delete_class_room(self, class_id):
         with self.connect() as db_session:
-            class_record = db_session.query(Class).filter(Class.class_id == class_id).with_lockmode('update').first()
-            if class_record:
-                db_session.delete(class_record)
+            class_room = db_session.query(ClassRoom).filter(ClassRoom.id == class_id).with_lockmode('update').first()
+            if class_room:
+                db_session.delete(class_room)
 
     # -------------------Api for notification table---------------------------
     def get_notification(self, notification_id):
@@ -197,4 +205,10 @@ class DbApi(object):
             if homework:
                 db_session.delete(homework)
 
-
+    # -------------------Api for class_room-user relationship table---------------------------
+    def join_class_room(self, user_id, invitation_code):
+        with self.connect() as db_session:
+            user = db_session.query(User).filter(User.id == user_id).with_lockmode('read').first()
+            class_room = db_session.query(ClassRoom).\
+                filter(ClassRoom.invitation_code == invitation_code).with_lockmode('read').first()
+            user.class_room = class_room
