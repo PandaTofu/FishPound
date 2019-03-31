@@ -6,7 +6,7 @@
 # @Author  : PandaTofu
 
 import time
-from flask import Blueprint, request, make_response, jsonify, abort
+from flask import Blueprint, request, make_response, jsonify, Response, abort
 from flask_security.core import Security
 from fish_pound.utils import get_client_id, create_response
 from fish_pound.db_access.database import User
@@ -19,6 +19,8 @@ class UserApiManager(BaseApiManager):
         self.security_service = None
         self.login_unauthorized_callback = None
         self.token_unauthorized_callback = None
+        self.user_loader_callback = None
+        self.request_loader_callback = None
         BaseApiManager.__init__(self, app, bp_name, url_prefix)
 
     def init_app(self, app):
@@ -37,8 +39,8 @@ class UserApiManager(BaseApiManager):
     def init_security_service(self):
         self.security_service = Security()
         self.security_service._state = self.security_service.init_app(self.app)
-        self.security_service.login_manager.user_loader(self._load_auth_token)
-        self.security_service.login_manager.request_loader(self._request_loader)
+        self.user_loader(self._load_auth_token)
+        self.request_loader(self._request_loader)
         self.login_unauthorized_handler(self._login_unauthorized_handler)
         self.token_unauthorized_handler(self._token_unauthorized_handler)
 
@@ -119,13 +121,21 @@ class UserApiManager(BaseApiManager):
 
     @staticmethod
     def _login_unauthorized_handler():
-        print('invalid credential.')
-        abort(401)
+        abort(Response(response='Unauthorized.', status=401))
 
     @staticmethod
     def _token_unauthorized_handler():
-        print('permission deny.')
-        abort(401)
+        abort(Response(response='Permission Deny.', status=401))
+
+    def user_loader(self, callback):
+        self.user_loader_callback = callback
+        self.security_service.login_manager.user_loader(self.user_loader_callback)
+        return callback
+
+    def request_loader(self, callback):
+        self.request_loader_callback = callback
+        self.security_service.login_manager.request_loader(self.request_loader_callback)
+        return callback
 
     def login_unauthorized_handler(self, callback):
         self.login_unauthorized_callback = callback
