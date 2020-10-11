@@ -5,6 +5,8 @@
 # @Date    : 2019/02/24
 # @Author  : PandaTofu
 
+import platform
+
 
 class Config:
     """base config"""
@@ -18,14 +20,20 @@ class Config:
 
 class ProConfig(Config):
     """running evn config"""
-    DB_URL = 'mysql+pymysql://%(user)s:%(passwd)s@%(url)s/%(dbname)s' \
-         % {'user': 'root', 'passwd': 'FishPound2019!', 'url': 'localhost', 'dbname': 'test_product'}
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'mysql+pymysql://%(user)s:%(passwd)s@%(url)s/%(dbname)s' \
+            % {'user': 'root', 'passwd': 'FishPound2019!', 
+               'url': 'localhost', 'dbname': 'test_product'}
 
 
 class TestConfig(Config):
     """testing config"""
-    DB_URL = 'mysql+pymysql://%(user)s:%(passwd)s@%(url)s/%(dbname)s' \
-         % {'user': 'root', 'passwd': 'FishPound2019!', 'url': 'localhost', 'dbname': 'test'}
+    db_urls = {
+        'Linux': 'mysql+pymysql://%(user)s:%(passwd)s@%(url)s/%(dbname)s' \
+            % {'user': 'root', 'passwd': 'FishPound2019!', 
+               'url': 'localhost', 'dbname': 'test'}
+    }
+    SQLALCHEMY_DATABASE_URI = db_urls[platform.system()]
 
 
 config = {
