@@ -5,7 +5,7 @@
 # @Author  : PandaTofu
 
 from flask import Flask
-from config import config
+from app.config import config
 from extensions import db
 
 

@@ -5,13 +5,17 @@
 # @Date    : 2019/02/24
 # @Author  : PandaTofu
 
+import os
 import platform
 
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+#load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
     """base config"""
     HOST = "127.0.0.1"
-    PORT = 443
+    PORT = 444
     DEBUG = True
     SECRET_KEY = 'dnuoPhsiF'
     SECRET_REMEMBER_SALT = 'toBeOrNotToBe'
@@ -31,8 +35,11 @@ class TestConfig(Config):
     db_urls = {
         'Linux': 'mysql+pymysql://%(user)s:%(passwd)s@%(url)s/%(dbname)s' \
             % {'user': 'root', 'passwd': 'FishPound2019!', 
-               'url': 'localhost', 'dbname': 'test'}
+               'url': 'localhost', 'dbname': 'test'},
+        'Darwin': 'sqlite:///' + os.path.join(basedir, 'test.db')
+               
     }
+    
     SQLALCHEMY_DATABASE_URI = db_urls[platform.system()]
 
 
